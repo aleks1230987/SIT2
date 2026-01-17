@@ -1,7 +1,7 @@
 Установка и настройка PosgreSQL на Linux:
 
 Обновляем пакеты
-# sudo apt update
+sudo apt update
 
 Устанавливаем PostgreSQL
 # sudo apt install postgresql postgresql-contrib
