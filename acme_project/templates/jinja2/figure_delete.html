@@ -1,0 +1,86 @@
+<!-- templates/jinja2/figure_delete.html -->
+{% extends "jinja2/layouts/base.html" %}
+
+{% block title %}{{ title }} - Pantheon Project{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <nav aria-label="breadcrumb" class="mb-4">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{{ url('home') }}">Главная</a></li>
+                <li class="breadcrumb-item"><a href="{{ url('figure_list') }}">Исторические личности</a></li>
+                <li class="breadcrumb-item"><a href="{{ url('figure_detail', args=[figure.pk]) }}">{{ figure.full_name }}</a></li>
+                <li class="breadcrumb-item active">Удаление</li>
+            </ol>
+        </nav>
+        
+        <div class="card border-danger shadow">
+            <div class="card-header bg-danger text-white">
+                <h2 class="mb-0"><i class="bi bi-exclamation-triangle"></i> {{ title }}</h2>
+            </div>
+            <div class="card-body">
+                <div class="alert alert-danger">
+                    <h4 class="alert-heading">Внимание! Это действие необратимо.</h4>
+                    <p>Вы собираетесь удалить историческую личность из базы данных.</p>
+                    <hr>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <p class="mb-1"><strong>Имя:</strong></p>
+                            <p class="mb-3">{{ figure.full_name }}</p>
+                        </div>
+                        <div class="col-md-6">
+                            {% if figure.birth_year %}
+                                <p class="mb-1"><strong>Год рождения:</strong></p>
+                                <p class="mb-3">{{ figure.birth_year }}</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    {% if figure.city %}
+                        <p class="mb-1"><strong>Место рождения:</strong></p>
+                        <p class="mb-3">{{ figure.city.name }}, {{ figure.city.country.name }}</p>
+                    {% endif %}
+                    
+                    {% if figure.occupation %}
+                        <p class="mb-1"><strong>Профессия:</strong></p>
+                        <p class="mb-3">{{ figure.occupation.name }}</p>
+                    {% endif %}
+                </div>
+                
+                <form method="post">
+                    {{ csrf_input }}
+                    
+                    <div class="mb-4">
+                        <div class="form-check">
+                            {{ form.confirm }}
+                            <label class="form-check-label" for="id_confirm">
+                                <strong>{{ form.confirm.label }}</strong>
+                            </label>
+                            {% if form.confirm.help_text %}
+                                <div class="form-text">{{ form.confirm.help_text }}</div>
+                            {% endif %}
+                        </div>
+                        {% if form.confirm.errors %}
+                            <div class="text-danger small mt-1">
+                                {% for error in form.confirm.errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="d-flex justify-content-between">
+                        <a href="{{ url('figure_detail', args=[figure.pk]) }}" class="btn btn-outline-secondary">
+                            <i class="bi bi-arrow-left"></i> Вернуться назад
+                        </a>
+                        <button type="submit" class="btn btn-danger">
+                            <i class="bi bi-trash"></i> Удалить навсегда
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

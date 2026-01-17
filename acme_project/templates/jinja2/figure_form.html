@@ -1,0 +1,304 @@
+<!-- templates/jinja2/figure_form.html -->
+{% extends "jinja2/layouts/base.html" %}
+
+{% block title %}{{ title }} - Pantheon Project{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-12">
+        <nav aria-label="breadcrumb" class="mb-4">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{{ url('home') }}">Главная</a></li>
+                <li class="breadcrumb-item"><a href="{{ url('figure_list') }}">Исторические личности</a></li>
+                <li class="breadcrumb-item active">{{ title }}</li>
+            </ol>
+        </nav>
+        
+        <div class="card shadow">
+            <div class="card-header bg-primary text-white">
+                <h2 class="mb-0"><i class="bi bi-person-plus"></i> {{ title }}</h2>
+            </div>
+            <div class="card-body">
+                <form method="post" novalidate>
+                    {{ csrf_input }}
+                    
+                    <div class="accordion" id="formAccordion">
+                        <!-- Основная информация -->
+                        <div class="accordion-item">
+                            <h2 class="accordion-header">
+                                <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseBasic">
+                                    <i class="bi bi-info-circle me-2"></i> Основная информация
+                                </button>
+                            </h2>
+                            <div id="collapseBasic" class="accordion-collapse collapse show" data-bs-parent="#formAccordion">
+                                <div class="accordion-body">
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <div class="mb-3">
+                                                <label for="id_article_id" class="form-label">{{ form.article_id.label }}</label>
+                                                {{ form.article_id }}
+                                                {% if form.article_id.errors %}
+                                                    <div class="text-danger small">
+                                                        {% for error in form.article_id.errors %}
+                                                            {{ error }}
+                                                        {% endfor %}
+                                                    </div>
+                                                {% endif %}
+                                                <div class="form-text">Уникальный идентификатор статьи в Wikipedia</div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="mb-3">
+                                                <label for="id_full_name" class="form-label">{{ form.full_name.label }}</label>
+                                                {{ form.full_name }}
+                                                {% if form.full_name.errors %}
+                                                    <div class="text-danger small">
+                                                        {% for error in form.full_name.errors %}
+                                                            {{ error }}
+                                                        {% endfor %}
+                                                    </div>
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="row">
+                                        <div class="col-md-4">
+                                            <div class="mb-3">
+                                                <label for="id_birth_year" class="form-label">{{ form.birth_year.label }}</label>
+                                                {{ form.birth_year }}
+                                                {% if form.birth_year.errors %}
+                                                    <div class="text-danger small">
+                                                        {% for error in form.birth_year.errors %}
+                                                            {{ error }}
+                                                        {% endfor %}
+                                                    </div>
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <div class="mb-3">
+                                                <label for="id_page_views" class="form-label">{{ form.page_views.label }}</label>
+                                                {{ form.page_views }}
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <div class="mb-3">
+                                                <label for="id_average_views" class="form-label">{{ form.average_views.label }}</label>
+                                                {{ form.average_views }}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Место рождения -->
+                        <div class="accordion-item">
+                            <h2 class="accordion-header">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseLocation">
+                                    <i class="bi bi-geo-alt me-2"></i> Место рождения
+                                </button>
+                            </h2>
+                            <div id="collapseLocation" class="accordion-collapse collapse" data-bs-parent="#formAccordion">
+                                <div class="accordion-body">
+                                    <div class="alert alert-info">
+                                        <i class="bi bi-info-circle"></i> Вы можете выбрать существующий город или создать новый
+                                    </div>
+                                    
+                                    <div class="row mb-3">
+                                        <div class="col-md-6">
+                                            <div class="card">
+                                                <div class="card-header bg-light">
+                                                    <h6 class="mb-0">Выбрать существующий город</h6>
+                                                </div>
+                                                <div class="card-body">
+                                                    <div class="mb-3">
+                                                        <label for="id_city" class="form-label">{{ form.city.label }}</label>
+                                                        {{ form.city }}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="card">
+                                                <div class="card-header bg-light">
+                                                    <h6 class="mb-0">Или создать новый город</h6>
+                                                </div>
+                                                <div class="card-body">
+                                                    <div class="mb-3">
+                                                        <label for="id_new_city_name" class="form-label">{{ form.new_city_name.label }}</label>
+                                                        {{ form.new_city_name }}
+                                                    </div>
+                                                    <div class="mb-3">
+                                                        <label for="id_new_country" class="form-label">{{ form.new_country.label }}</label>
+                                                        {{ form.new_country }}
+                                                        <div class="form-text">Выберите страну для нового города</div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="row">
+                                        <div class="col-md-12">
+                                            <h6 class="border-bottom pb-2">Оригинальные данные (если город не найден в базе)</h6>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <div class="mb-3">
+                                                <label for="id_original_city_name" class="form-label">{{ form.original_city_name.label }}</label>
+                                                {{ form.original_city_name }}
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <div class="mb-3">
+                                                <label for="id_original_country_name" class="form-label">{{ form.original_country_name.label }}</label>
+                                                {{ form.original_country_name }}
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <div class="mb-3">
+                                                <label for="id_original_continent_name" class="form-label">{{ form.original_continent_name.label }}</label>
+                                                {{ form.original_continent_name }}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Профессия -->
+                        <div class="accordion-item">
+                            <h2 class="accordion-header">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOccupation">
+                                    <i class="bi bi-briefcase me-2"></i> Профессия
+                                </button>
+                            </h2>
+                            <div id="collapseOccupation" class="accordion-collapse collapse" data-bs-parent="#formAccordion">
+                                <div class="accordion-body">
+                                    <div class="row mb-3">
+                                        <div class="col-md-6">
+                                            <div class="card">
+                                                <div class="card-header bg-light">
+                                                    <h6 class="mb-0">Выбрать существующую профессию</h6>
+                                                </div>
+                                                <div class="card-body">
+                                                    <div class="mb-3">
+                                                        <label for="id_occupation" class="form-label">{{ form.occupation.label }}</label>
+                                                        {{ form.occupation }}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="card">
+                                                <div class="card-header bg-light">
+                                                    <h6 class="mb-0">Или создать новую профессию</h6>
+                                                </div>
+                                                <div class="card-body">
+                                                    <div class="mb-3">
+                                                        <label for="id_new_occupation_name" class="form-label">{{ form.new_occupation_name.label }}</label>
+                                                        {{ form.new_occupation_name }}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="row">
+                                        <div class="col-md-12">
+                                            <h6 class="border-bottom pb-2">Оригинальные данные о профессии</h6>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <div class="mb-3">
+                                                <label for="id_original_occupation_name" class="form-label">{{ form.original_occupation_name.label }}</label>
+                                                {{ form.original_occupation_name }}
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <div class="mb-3">
+                                                <label for="id_original_industry_name" class="form-label">{{ form.original_industry_name.label }}</label>
+                                                {{ form.original_industry_name }}
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <div class="mb-3">
+                                                <label for="id_original_domain_name" class="form-label">{{ form.original_domain_name.label }}</label>
+                                                {{ form.original_domain_name }}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Показатели популярности -->
+                        <div class="accordion-item">
+                            <h2 class="accordion-header">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapsePopularity">
+                                    <i class="bi bi-graph-up me-2"></i> Показатели популярности
+                                </button>
+                            </h2>
+                            <div id="collapsePopularity" class="accordion-collapse collapse" data-bs-parent="#formAccordion">
+                                <div class="accordion-body">
+                                    <div class="row">
+                                        <div class="col-md-4">
+                                            <div class="mb-3">
+                                                <label for="id_historical_popularity_index" class="form-label">{{ form.historical_popularity_index.label }}</label>
+                                                {{ form.historical_popularity_index }}
+                                                <div class="form-text">Чем выше значение, тем популярнее личность</div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <div class="mb-3">
+                                                <label for="id_article_languages" class="form-label">{{ form.article_languages.label }}</label>
+                                                {{ form.article_languages }}
+                                                <div class="form-text">На скольких языках есть статья</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="d-flex justify-content-between mt-4 pt-3 border-top">
+                        <a href="{{ url('figure_list') }}" class="btn btn-secondary">
+                            <i class="bi bi-arrow-left"></i> Отмена
+                        </a>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-check-lg"></i> {{ submit_text }}
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Автоматическое открытие первой секции с ошибками
+        const forms = document.querySelectorAll('form');
+        forms.forEach(form => {
+            const inputsWithErrors = form.querySelectorAll('.is-invalid');
+            if (inputsWithErrors.length > 0) {
+                inputsWithErrors.forEach(input => {
+                    const accordionItem = input.closest('.accordion-item');
+                    if (accordionItem) {
+                        const collapse = accordionItem.querySelector('.accordion-collapse');
+                        if (collapse) {
+                            const bsCollapse = new bootstrap.Collapse(collapse, {
+                                toggle: true
+                            });
+                            bsCollapse.show();
+                        }
+                    }
+                });
+            }
+        });
+    });
+</script>
+{% endblock %}

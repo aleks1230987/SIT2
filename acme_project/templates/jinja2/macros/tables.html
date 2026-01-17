@@ -1,0 +1,103 @@
+{# templates/jinja2/macros/tables.html #}
+{% macro figure_table(figures, current_page=1, show_numbers=true) %}
+<div class="table-responsive">
+    <table class="table table-striped table-hover">
+        <thead class="table-dark">
+            <tr>
+                {% if show_numbers %}
+                <th width="5%">№</th>
+                {% endif %}
+                <th>Имя</th>
+                <th width="10%">Год</th>
+                <th width="25%">Место</th>
+                <th width="15%">Популярность</th>
+                <th width="10%">Языков</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for figure in figures %}
+            <tr>
+                {% if show_numbers %}
+                <td class="text-muted">
+                    {{ ((current_page - 1) * 100) + loop.index }}
+                </td>
+                {% endif %}
+                
+                <td>
+                    <strong>{{ figure.full_name }}</strong>
+                </td>
+                
+                <td>
+                    {% if figure.birth_year %}
+                        <span class="badge bg-secondary">{{ figure.birth_year }}</span>
+                    {% else %}
+                        <span class="text-muted">-</span>
+                    {% endif %}
+                </td>
+                
+                <td>
+                    {{ get_location(figure) }}
+                </td>
+                
+                <td>
+                    {{ popularity_badge(figure.historical_popularity_index) }}
+                </td>
+                
+                <td>
+                    {{ language_badge(figure.article_languages) }}
+                </td>
+            </tr>
+            {% else %}
+            <tr>
+                <td colspan="{% if show_numbers %}6{% else %}5{% endif %}" class="text-center py-5">
+                    <div class="py-4">
+                        <i class="bi bi-people display-1 text-muted"></i>
+                        <h4 class="mt-3 text-muted">Нет данных</h4>
+                    </div>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endmacro %}
+
+{% macro get_location(figure) %}
+{% if figure.city %}
+    <div>
+        <i class="bi bi-geo-alt text-muted"></i>
+        {{ figure.city.name }}
+    </div>
+    {% if figure.city.country %}
+        <small class="text-muted">{{ figure.city.country.name }}</small>
+    {% endif %}
+{% elif figure.original_city_name %}
+    <div>
+        <i class="bi bi-geo-alt text-muted"></i>
+        {{ figure.original_city_name }}
+    </div>
+    {% if figure.original_country_name %}
+        <small class="text-muted">{{ figure.original_country_name }}</small>
+    {% endif %}
+{% else %}
+    <span class="text-muted">Не указано</span>
+{% endif %}
+{% endmacro %}
+
+{% macro popularity_badge(value) %}
+{% set color = 'success' if value > 24 else 'warning' if value > 17  else 'secondary' %}
+<span class="badge bg-{{ color }}">
+    {{ "%.1f"|format(value) }}
+</span>
+<div class="progress mt-1" style="height: 4px;">
+    <div class="progress-bar bg-{{ color }}" 
+         style="width: {{ (value / 10 * 100)|round }}%">
+    </div>
+</div>
+{% endmacro %}
+
+{% macro language_badge(count) %}
+<span class="badge bg-primary">
+    <i class="bi bi-translate"></i> {{ count }}
+</span>
+{% endmacro %}

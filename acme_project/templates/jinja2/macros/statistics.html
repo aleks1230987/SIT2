@@ -1,0 +1,158 @@
+{# templates/jinja2/macros/statistics.html #}
+{% macro city_popularity_table(cities_stats) %}
+<div class="card shadow-sm mb-4">
+    <div class="card-header bg-primary text-white">
+        <h5 class="card-title mb-0">
+            <i class="bi bi-building"></i> Средняя популярность по городам
+        </h5>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead class="table-light">
+                    <tr>
+                        <th>Город</th>
+                        <th>Страна</th>
+                        <th>Кол-во личностей</th>
+                        <th>Средняя популярность</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for city in cities_stats %}
+                    <tr>
+                        <td>
+                            <strong>{{ city.name }}</strong>
+                        </td>
+                        <td>
+                            {% if city.country %}
+                                <span class="badge bg-info">{{ city.country.name }}</span>
+                            {% else %}
+                                <span class="text-muted">-</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <span class="badge bg-secondary">{{ city.figure_count|default(0) }}</span>
+                        </td>
+                        <td>
+                            <div class="d-flex align-items-center">
+                                <div class="progress flex-grow-1" style="height: 8px;">
+                                    <div class="progress-bar 
+                                        {% if city.avg_popularity >= 7 %}bg-success
+                                        {% elif city.avg_popularity >= 5 %}bg-warning
+                                        {% else %}bg-danger{% endif %}"
+                                        style="width: {{ (city.avg_popularity / 10 * 100)|round|int }}%">
+                                    </div>
+                                </div>
+                                <span class="ms-2 fw-bold">
+                                    {{ "%.2f"|format(city.avg_popularity) }}
+                                </span>
+                            </div>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="5" class="text-center py-4 text-muted">
+                            <i class="bi bi-building fs-1"></i>
+                            <p class="mt-2">Нет данных о городах</p>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    {% if cities_stats %}
+    <div class="card-footer bg-light">
+        <small class="text-muted">
+            <i class="bi bi-info-circle"></i> 
+            Показано {{ cities_stats|length }} городов с наибольшей средней популярностью
+        </small>
+    </div>
+    {% endif %}
+</div>
+{% endmacro %}
+
+{% macro country_figures_table(countries_stats) %}
+<div class="card shadow-sm mb-4">
+    <div class="card-header bg-success text-white">
+        <h5 class="card-title mb-0">
+            <i class="bi bi-globe"></i> Количество личностей по странам
+        </h5>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead class="table-light">
+                    <tr>
+                        <th>Страна</th>
+                        <th>Континент</th>
+                        <th>Кол-во личностей</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for country in countries_stats %}
+                    <tr>
+                        <td>
+                            <strong>
+                                <i class="bi bi-flag"></i> {{ country.name }}
+                            </strong>
+                        </td>
+                        <td>
+                            <span class="badge bg-secondary">{{ country.continent|default("Не указан") }}</span>
+                        </td>
+                        <td>
+                            <h5 class="mb-0">
+                                <span class="badge bg-primary rounded-pill">
+                                    {{ country.figure_count|default(0) }}
+                                </span>
+                            </h5>
+                        </td>
+                        
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="5" class="text-center py-4 text-muted">
+                            <i class="bi bi-globe fs-1"></i>
+                            <p class="mt-2">Нет данных о странах</p>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    {% if countries_stats %}
+    <div class="card-footer bg-light">
+        <div class="row">
+            <div class="col-md-6">
+                <small class="text-muted">
+                    <i class="bi bi-hash"></i> 
+                    Всего стран показано: {{ countries_stats|length }}
+                </small>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endmacro %}
+
+{% macro stats_summary_card(title, value, icon, color='primary', subtitle='') %}
+<div class="col-md-3 col-sm-6 mb-4">
+    <div class="card border-{{ color }} shadow-sm">
+        <div class="card-body">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h6 class="card-subtitle mb-2 text-muted">{{ title }}</h6>
+                    <h2 class="card-title mb-0">{{ value|default(0) }}</h2>
+                    {% if subtitle %}
+                    <p class="card-text small text-muted mb-0">{{ subtitle }}</p>
+                    {% endif %}
+                </div>
+                <div class="bg-{{ color }} bg-opacity-10 p-3 rounded-circle">
+                    <i class="bi bi-{{ icon }} fs-2 text-{{ color }}"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endmacro %}

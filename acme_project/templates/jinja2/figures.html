@@ -1,0 +1,290 @@
+{# templates/jinja2/figures.html #}
+{% extends "jinja2/layouts/base.html" %}
+{% from "jinja2/macros/pagination.html" import pagination_controls, page_info %}
+
+{% block title %}Исторические личности - Pantheon Project{% endblock %}
+
+{% block extra_css %}
+<style>
+    .table th {
+        font-weight: 600;
+    }
+    .pagination .page-item.active .page-link {
+        background-color: #0d6efd;
+        border-color: #0d6efd;
+    }
+    .action-buttons {
+        white-space: nowrap;
+        min-width: 120px;
+    }
+    .action-buttons .btn {
+        padding: 0.25rem 0.5rem;
+        font-size: 0.875rem;
+        margin: 0 2px;
+    }
+    .badge-popularity {
+        font-size: 0.75rem;
+        padding: 0.25rem 0.5rem;
+    }
+    .table-hover tbody tr:hover {
+        background-color: rgba(0, 0, 0, 0.075);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Заголовок и кнопки добавления -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="mb-1">
+                <i class="bi bi-people text-primary"></i> Исторические личности
+            </h1>
+            <p class="text-muted mb-0">Пагинация по 100 записей на страницу</p>
+        </div>
+        <div>
+            <a href="{{ url('figure_create') }}" class="btn btn-primary me-2">
+                <i class="bi bi-person-plus"></i> Добавить личность
+            </a>
+            <a href="{{ url('home') }}" class="btn btn-outline-secondary">
+                <i class="bi bi-house"></i> На главную
+            </a>
+        </div>
+    </div>
+
+    <!-- Информация о записях -->
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <div class="text-muted">
+            <i class="bi bi-info-circle"></i> Показано {{ figures|length }} из {{ total_figures }} записей
+        </div>
+        {% if total_figures > 0 %}
+        <div class="text-muted">
+            Страница {{ current_page }} из {{ total_pages }}
+        </div>
+        {% endif %}
+    </div>
+
+    {% if figures %}
+    <!-- Информация о странице -->
+    {{ page_info(current_page, total_pages, total_figures, 100) }}
+
+    <!-- Таблица с кнопками действий -->
+    <div class="table-responsive">
+        <table class="table table-hover table-striped">
+            <thead class="table-dark">
+                <tr>
+                    <th width="50">#</th>
+                    <th width="100">ID статьи</th>
+                    <th>Полное имя</th>
+                    <th width="120">Год рождения</th>
+                    <th>Место рождения</th>
+                    <th>Профессия</th>
+                    <th width="150">Популярность</th>
+                    <th width="140" class="text-center">Действия</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for figure in figures %}
+                <tr>
+                    <td>{{ loop.index + (current_page - 1) * 100 }}</td>
+                    <td>{{ figure.article_id }}</td>
+                    <td>
+                        <strong>{{ figure.full_name }}</strong>
+                    </td>
+                    <td>
+                        {% if figure.birth_year %}
+                            {{ figure.birth_year }}
+                        {% else %}
+                            <span class="text-muted">—</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if figure.city %}
+                            {{ figure.city.name }}, {{ figure.city.country.name }}
+                        {% elif figure.original_city_name %}
+                            {{ figure.original_city_name }}, {{ figure.original_country_name }}
+                        {% else %}
+                            <span class="text-muted">—</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if figure.occupation %}
+                            {{ figure.occupation.name }}
+                        {% elif figure.original_occupation_name %}
+                            {{ figure.original_occupation_name }}
+                        {% else %}
+                            <span class="text-muted">—</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <div class="d-flex align-items-center">
+                            {% if figure.popularity_category == 'Очень высокая' %}
+                                <span class="badge bg-success badge-popularity me-2">
+                                    {{ figure.historical_popularity_index|round(1) }}
+                                </span>
+                                <small>Очень высокая</small>
+                            {% elif figure.popularity_category == 'Высокая' %}
+                                <span class="badge bg-primary badge-popularity me-2">
+                                    {{ figure.historical_popularity_index|round(1) }}
+                                </span>
+                                <small>Высокая</small>
+                            {% elif figure.popularity_category == 'Средняя' %}
+                                <span class="badge bg-info badge-popularity me-2">
+                                    {{ figure.historical_popularity_index|round(1) }}
+                                </span>
+                                <small>Средняя</small>
+                            {% elif figure.popularity_category == 'Низкая' %}
+                                <span class="badge bg-warning badge-popularity me-2">
+                                    {{ figure.historical_popularity_index|round(1) }}
+                                </span>
+                                <small>Низкая</small>
+                            {% else %}
+                                <span class="badge bg-secondary badge-popularity me-2">
+                                    {{ figure.historical_popularity_index|round(1) }}
+                                </span>
+                                <small>Очень низкая</small>
+                            {% endif %}
+                        </div>
+                    </td>
+                    <td class="action-buttons text-center">
+                        <div class="btn-group" role="group">
+                            <a href="{{ url('figure_detail', args=[figure.pk]) }}" 
+                               class="btn btn-sm btn-outline-primary" 
+                               data-bs-toggle="tooltip"
+                               title="Просмотр деталей">
+                                <i class="bi bi-eye"></i>
+                            </a>
+                            <a href="{{ url('figure_update', args=[figure.pk]) }}" 
+                               class="btn btn-sm btn-outline-warning"
+                               data-bs-toggle="tooltip"
+                               title="Редактировать">
+                                <i class="bi bi-pencil"></i>
+                            </a>
+                            <a href="{{ url('figure_delete', args=[figure.pk]) }}" 
+                               class="btn btn-sm btn-outline-danger"
+                               data-bs-toggle="tooltip"
+                               title="Удалить"
+                               onclick="return confirm('Вы уверены, что хотите удалить запись «{{ figure.full_name }}»?');">
+                                <i class="bi bi-trash"></i>
+                            </a>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Пагинация -->
+    {{ pagination_controls(current_page, total_pages) }}
+
+    <!-- Быстрая навигация -->
+    {% if total_pages > 5 %}
+    <div class="row mt-3">
+        <div class="col-md-8">
+            <div class="btn-group" role="group">
+                {% for i in [1, 2, 3, total_pages-2, total_pages-1, total_pages] %}
+                    {% if i > 0 and i <= total_pages %}
+                        <a href="?page={{ i }}" 
+                           class="btn btn-outline-secondary {% if i == current_page %}active{% endif %}">
+                            {{ i }}
+                        </a>
+                    {% endif %}
+                {% endfor %}
+            </div>
+        </div>
+        <div class="col-md-4 text-end">
+            <form class="form-inline" method="get" style="display: inline;">
+                <div class="input-group input-group-sm">
+                    <input type="number" class="form-control" 
+                           name="page" min="1" max="{{ total_pages }}"
+                           placeholder="Стр." style="width: 80px;">
+                    <button class="btn btn-primary" type="submit">
+                        <i class="bi bi-arrow-right"></i>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Статистика -->
+    <div class="row mt-4">
+        <div class="col-md-3">
+            <div class="card border-primary">
+                <div class="card-body text-center">
+                    <h6 class="card-subtitle mb-2 text-muted">Всего записей</h6>
+                    <h2 class="card-title text-primary">{{ total_figures }}</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-success">
+                <div class="card-body text-center">
+                    <h6 class="card-subtitle mb-2 text-muted">Всего страниц</h6>
+                    <h2 class="card-title text-success">{{ total_pages }}</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-info">
+                <div class="card-body text-center">
+                    <h6 class="card-subtitle mb-2 text-muted">Текущая страница</h6>
+                    <h2 class="card-title text-info">{{ current_page }}</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-warning">
+                <div class="card-body text-center">
+                    <h6 class="card-subtitle mb-2 text-muted">На странице</h6>
+                    <h2 class="card-title text-warning">{{ figures|length }}</h2>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Кнопки управления (если есть записи) -->
+    <div class="mt-4 pt-3 border-top">
+        <div class="d-flex justify-content-between">
+            <div>
+                <a href="{{ url('figure_create') }}" class="btn btn-primary">
+                    <i class="bi bi-person-plus"></i> Добавить новую личность
+                </a>
+            </div>
+            <a href="{{ url('home') }}" class="btn btn-outline-secondary">
+                <i class="bi bi-arrow-left"></i> Вернуться на главную
+            </a>
+        </div>
+    </div>
+
+    {% else %}
+    <!-- Если нет данных -->
+    <div class="text-center py-5">
+        <i class="bi bi-people display-1 text-muted"></i>
+        <h3 class="mt-3 text-muted">Нет данных для отображения</h3>
+        <p class="text-muted">В базе данных нет исторических личностей</p>
+        <div class="mt-4">
+            <a href="{{ url('figure_create') }}" class="btn btn-primary me-2">
+                <i class="bi bi-plus-circle"></i> Добавить первую запись
+            </a>
+            <a href="{{ url('home') }}" class="btn btn-outline-secondary">
+                <i class="bi bi-house"></i> На главную
+            </a>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Активация подсказок Bootstrap
+        var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+        var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+            return new bootstrap.Tooltip(tooltipTriggerEl);
+        });
+    });
+</script>
+{% endblock %}

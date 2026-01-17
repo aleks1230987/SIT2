@@ -1,0 +1,430 @@
+{# templates/jinja2/home.html #}
+{% extends "jinja2/layouts/base.html" %}
+
+{% block title %}Главная - Pantheon Project{% endblock %}
+
+{% block extra_css %}
+<style>
+    .table th {
+        font-weight: 600;
+        font-size: 0.85rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+    .table-responsive {
+        max-height: 500px;
+        overflow-y: auto;
+    }
+    .badge-popularity {
+        min-width: 60px;
+        display: inline-block;
+        text-align: center;
+    }
+    .progress-thin {
+        height: 6px;
+        margin-top: 4px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-4">
+    <!-- Заголовок -->
+    <div class="row mb-4 mt-3">
+        <div class="col-12">
+            <div class="bg-dark bg-gradient rounded-3 p-4 shadow">
+                <h1 class="display-5 text-white mb-2">
+                    <i class="bi bi-bar-chart-line me-2"></i> Pantheon Project
+                </h1>
+                <p class="lead text-light mb-0">
+                    База данных статей об исторических личностях с метриками популярности
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Статистика -->
+    <div class="row mb-4">
+        <div class="col-xl-3 col-lg-6 col-md-6 col-sm-12 mb-4">
+            <div class="card border-primary shadow-sm">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="card-subtitle mb-2 text-muted">Всего личностей</h6>
+                            <h2 class="card-title mb-0">{{ stats.total_figures|default(0) }}</h2>
+                        </div>
+                        <div class="bg-primary bg-opacity-10 p-3 rounded-circle">
+                            <i class="bi bi-people fs-2 text-primary"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-xl-3 col-lg-6 col-md-6 col-sm-12 mb-4">
+            <div class="card border-success shadow-sm">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="card-subtitle mb-2 text-muted">Стран</h6>
+                            <h2 class="card-title mb-0">{{ stats.total_countries|default(0) }}</h2>
+                        </div>
+                        <div class="bg-success bg-opacity-10 p-3 rounded-circle">
+                            <i class="bi bi-globe fs-2 text-success"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-xl-3 col-lg-6 col-md-6 col-sm-12 mb-4">
+            <div class="card border-info shadow-sm">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="card-subtitle mb-2 text-muted">Городов</h6>
+                            <h2 class="card-title mb-0">{{ stats.total_cities|default(0) }}</h2>
+                        </div>
+                        <div class="bg-info bg-opacity-10 p-3 rounded-circle">
+                            <i class="bi bi-building fs-2 text-info"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-xl-3 col-lg-6 col-md-6 col-sm-12 mb-4">
+            <div class="card border-warning shadow-sm">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="card-subtitle mb-2 text-muted">Профессий</h6>
+                            <h2 class="card-title mb-0">{{ stats.total_occupations|default(0) }}</h2>
+                        </div>
+                        <div class="bg-warning bg-opacity-10 p-3 rounded-circle">
+                            <i class="bi bi-briefcase fs-2 text-warning"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Таблица со всеми колонками из базы данных -->
+    <div class="card shadow mb-5">
+        <div class="card-header bg-dark text-white d-flex justify-content-between align-items-center">
+            <h4 class="mb-0">
+                <i class="bi bi-table"></i> Таблица исторических личностей
+            </h4>
+            <span class="badge bg-light text-dark">{{ stats.total_figures|default(0) }}</span>
+        </div>
+        
+        <div class="card-body p-0">
+            {% if recent_figures %}
+            <div class="table-responsive">
+                <table class="table table-hover table-striped mb-0">
+                    <thead class="table-dark" style="position: sticky; top: 0; z-index: 1;">
+                        <tr>
+                            <th>ID</th>
+                            <th>Полное имя</th>
+                            <th>Год рождения</th>
+                            <th>Место рождения</th>
+                            <th>Профессия</th>
+                            <th>Сфера</th>
+                            <th>Домен</th>
+                            <th>Языков</th>
+                            <th>Просмотры</th>
+                            <th>Средние просмотры</th>
+                            <th>Индекс популярности</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for figure in recent_figures[:50] %}
+                        <tr>
+                            <!-- ID статьи -->
+                            <td class="text-muted">
+                                <small>#{{ figure.article_id }}</small>
+                            </td>
+                            
+                            <!-- Полное имя -->
+                            <td>
+                                <strong>{{ figure.full_name }}</strong>
+                            </td>
+                            
+                            <!-- Год рождения -->
+                            <td>
+                                {% if figure.birth_year %}
+                                    <span class="badge bg-secondary">{{ figure.birth_year }}</span>
+                                {% else %}
+                                    <span class="text-muted">-</span>
+                                {% endif %}
+                            </td>
+                            
+                            <!-- Место рождения -->
+                            <td>
+                                {% if figure.city %}
+                                    <div>
+                                        <i class="bi bi-geo-alt text-muted"></i>
+                                        {{ figure.city.name }}
+                                    </div>
+                                    {% if figure.city.country %}
+                                        <small class="text-muted">{{ figure.city.country.name }}</small>
+                                    {% endif %}
+                                {% elif figure.original_city_name %}
+                                    <div>
+                                        <i class="bi bi-geo-alt text-muted"></i>
+                                        {{ figure.original_city_name }}
+                                    </div>
+                                    {% if figure.original_country_name %}
+                                        <small class="text-muted">{{ figure.original_country_name }}</small>
+                                    {% endif %}
+                                {% else %}
+                                    <span class="text-muted">Не указано</span>
+                                {% endif %}
+                            </td>
+                            
+                            <!-- Профессия -->
+                            <td>
+                                {% if figure.occupation %}
+                                    <span class="badge bg-info">{{ figure.occupation.name }}</span>
+                                {% elif figure.original_occupation_name %}
+                                    <span class="badge bg-secondary">{{ figure.original_occupation_name }}</span>
+                                {% else %}
+                                    <span class="text-muted">-</span>
+                                {% endif %}
+                            </td>
+                            
+                            <!-- Сфера деятельности (industry) -->
+                            <td>
+                                {% if figure.occupation and figure.occupation.industry %}
+                                    <span class="badge bg-warning">{{ figure.occupation.industry }}</span>
+                                {% else %}
+                                    <span class="text-muted">-</span>
+                                {% endif %}
+                            </td>
+                            
+                            <!-- Домен деятельности (domain) -->
+                            <td>
+                                {% if figure.occupation and figure.occupation.domain %}
+                                    <span class="badge bg-primary">{{ figure.occupation.domain }}</span>
+                                {% else %}
+                                    <span class="text-muted">-</span>
+                                {% endif %}
+                            </td>
+                            
+                            <!-- Количество языков статьи -->
+                            <td>
+                                <div class="d-flex align-items-center">
+                                    <i class="bi bi-translate text-muted me-2"></i>
+                                    <span class="badge bg-dark">{{ figure.article_languages|default(0) }}</span>
+                                </div>
+                            </td>
+                            
+                            <!-- Просмотры страницы -->
+                            <td>
+                                {% if figure.page_views %}
+                                    <span class="text-muted" title="{{ figure.page_views }} просмотров">
+                                        {{ figure.page_views|intcomma if figure.page_views else "0" }}
+                                    </span>
+                                {% else %}
+                                    <span class="text-muted">0</span>
+                                {% endif %}
+                            </td>
+                            
+                            <!-- Средние просмотры -->
+                            <td>
+                                {% if figure.average_views %}
+                                    <span class="text-muted">
+                                        {{ "%.1f"|format(figure.average_views) if figure.average_views else "0.0" }}
+                                    </span>
+                                {% else %}
+                                    <span class="text-muted">0.0</span>
+                                {% endif %}
+                            </td>
+                            
+                            <!-- Индекс исторической популярности -->
+                            <td>
+                                <div class="d-flex flex-column">
+                                    <span class="badge-popularity badge mt-1 
+                                        {% if figure.historical_popularity_index >= 11 %}bg-success
+                                        {% elif figure.historical_popularity_index >= 10 %}bg-warning
+                                        {% else %}bg-danger{% endif %}">
+                                        {{ "%.2f"|format(figure.historical_popularity_index) if figure.historical_popularity_index else "0.00" }}
+                                    </span>
+                                </div>
+                            </td>
+                            
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            
+            <!-- Легенда таблицы -->
+            <div class="card-footer bg-light">
+                <div class="row">
+                    <div class="col-md-6">
+                        <small class="text-muted">
+                            <i class="bi bi-info-circle"></i> 
+                            Показано {{ [50, recent_figures|length]|min }} из {{ recent_figures|length }} последних записей
+                        </small>
+                    </div>
+                </div>
+            </div>
+            
+            {% else %}
+            <div class="text-center py-5">
+                <i class="bi bi-table display-1 text-muted"></i>
+                <h4 class="mt-3 text-muted">Нет данных для отображения</h4>
+                <p class="text-muted">База данных пуста или произошла ошибка загрузки</p>
+                <a href="/admin/" class="btn btn-primary mt-2">
+                    <i class="bi bi-plus-circle"></i> Добавить данные
+                </a>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="row mb-5">
+        <div class="col-md-6 mb-6">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h6 class="mb-0"><i class="bi bi-bar-chart"></i> Статистика популярности</h6>
+                </div>
+                <div class="card-body">
+                    <ul class="list-unstyled mb-0">
+                        <li class="mb-2">
+                            <small class="text-muted">Средний индекс популярности:</small>
+                            <div class="fw-bold">{{ "%.2f"|format(stats.avg_popularity|default(0)) }}/{{ "%.2f"|format(stats.max_popularity|default(0)) }}</div>
+                        </li>
+                        <li class="mb-2">
+                            <small class="text-muted">Максимальный индекс:</small>
+                            <div class="fw-bold">
+                                    {{ "%.2f"|format(stats.max_popularity|default(0)) }}
+                            </div>
+                        </li>
+                        <li>
+                            <small class="text-muted">Среднее число языков:</small>
+                            <div class="fw-bold">{{ "%.1f"|format(stats.avg_languages|default(0)) }}</div>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-6 mb-6">
+            <div class="card">
+                <div class="card-header bg-success text-white">
+                    <h6 class="mb-0"><i class="bi bi-eye"></i> Статистика просмотров</h6>
+                </div>
+                <div class="card-body">
+                    <ul class="list-unstyled mb-0">
+                        <li class="mb-2">
+                            <small class="text-muted">Всего просмотров:</small>
+                            <div class="fw-bold">{{ stats.total_views|default(0)|intcomma }}</div>
+                        </li>
+                        <li class="mb-2">
+                            <small class="text-muted">Средние просмотры:</small>
+                            <div class="fw-bold">{{ "%.1f"|format(stats.avg_views|default(0)) }}</div>
+                        </li>
+                        <li>
+                            <small class="text-muted">Максимум просмотров:</small>
+                            <div class="fw-bold">
+                                {% if recent_figures %}
+                                    {{ (recent_figures|map(attribute='page_views')|max|default(0))|intcomma }}
+                                {% else %}
+                                    0
+                                {% endif %}
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Быстрые ссылки -->
+    <div class="row mb-5">
+        <div class="col-md-4 mb-3">
+            <a href="/figures/" class="btn btn-primary btn-lg w-100 py-3">
+                <i class="bi bi-people fs-4"></i><br>
+                <span class="d-block mt-2">Все личности</span>
+                <small class="d-block text-light opacity-75">Полный список</small>
+            </a>
+        </div>
+        <div class="col-md-4 mb-3">
+            <a href="/statistics/" class="btn btn-success btn-lg w-100 py-3">
+                <i class="bi bi-graph-up fs-4"></i><br>
+                <span class="d-block mt-2">Аналитика</span>
+                <small class="d-block text-light opacity-75">Cтатистика</small>
+            </a>
+        </div>
+        <div class="col-md-4 mb-3">
+            <a href="/admin/" class="btn btn-warning btn-lg w-100 py-3">
+                <i class="bi bi-database fs-4"></i><br>
+                <span class="d-block mt-2">Управление БД</span>
+                <small class="d-block text-light opacity-75">Администрирование данных</small>
+            </a>
+        </div>
+    </div>
+
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+
+    const table = document.querySelector('table');
+    if (table) {
+        const headers = table.querySelectorAll('thead th');
+        
+        headers.forEach((header, index) => {
+            if (index < headers.length - 1) { 
+                header.style.cursor = 'pointer';
+                header.addEventListener('click', function() {
+                    sortTable(index);
+                });
+            }
+        });
+        
+        function sortTable(column) {
+            const tbody = table.querySelector('tbody');
+            const rows = Array.from(tbody.querySelectorAll('tr'));
+            
+            rows.sort((a, b) => {
+                const aCell = a.cells[column];
+                const bCell = b.cells[column];
+                
+                const aText = aCell.textContent.trim();
+                const bText = bCell.textContent.trim();
+                
+                const aNum = parseFloat(aText.replace(/[^\d.-]/g, ''));
+                const bNum = parseFloat(bText.replace(/[^\d.-]/g, ''));
+                
+                if (!isNaN(aNum) && !isNaN(bNum)) {
+                    return bNum - aNum;
+                }
+                
+                return aText.localeCompare(bText);
+            });
+            
+            rows.forEach(row => tbody.appendChild(row));
+        }
+    }
+    
+
+    const rows = document.querySelectorAll('table tbody tr');
+    rows.forEach(row => {
+        row.addEventListener('mouseenter', function() {
+            this.style.backgroundColor = '#f8f9fa';
+        });
+        row.addEventListener('mouseleave', function() {
+            this.style.backgroundColor = '';
+        });
+    });
+    
+
+});
+</script>
+{% endblock %}

@@ -1,0 +1,204 @@
+{# templates/jinja2/statistic.html #}
+{% extends "jinja2/layouts/base.html" %}
+{% from "jinja2/macros/statistics.html" import 
+    city_popularity_table, 
+    country_figures_table, 
+    stats_summary_card,
+    country_bar_chart
+%}
+
+{% block title %}Статистика - Pantheon Project{% endblock %}
+
+{% block extra_css %}
+<style>
+    .stats-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    }
+    .table th {
+        font-weight: 600;
+        font-size: 0.9rem;
+    }
+    .star-rating {
+        font-size: 1rem;
+        color: #ffc107;
+    }
+    .country-flag {
+        width: 20px;
+        height: 15px;
+        display: inline-block;
+        margin-right: 5px;
+        border: 1px solid #ddd;
+    }
+    .stat-card {
+        transition: transform 0.2s;
+        border-left: 4px solid;
+    }
+    .stat-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-4">
+    <!-- Заголовок -->
+    <div class="row mb-4 mt-3">
+        <div class="col-12">
+            <div class="stats-header rounded-3 p-4 shadow text-black">
+                <h1 class="display-5 mb-2">
+                    <i class="bi bi-graph-up"></i> Статистика Pantheon Project
+                </h1>
+                <p class="lead mb-0">
+                    Анализ исторической популярности по географическому признаку
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Дополнительная статистика -->
+    <div class="row">
+        <!-- Топ-5 городов по средней популярности -->
+        <div class="col-lg-6 mb-4">
+            <div class="card shadow-sm h-100">
+                <div class="card-header bg-warning text-dark">
+                    <h5 class="card-title mb-0">
+                        <i class="bi bi-trophy"></i> Топ-5 городов по средней популярности
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="list-group">
+                        {% for city in cities_stats[:5] %}
+                        <div class="list-group-item list-group-item-action">
+                            <div class="d-flex w-100 justify-content-between">
+                                <h6 class="mb-1">
+                                    {{ city.name }}
+                                </h6>
+                                <span class="badge bg-primary rounded-pill">
+                                    {{ "%.2f"|format(city.avg_popularity) }}
+                                </span>
+                            </div>
+                            <div class="mb-1">
+                                {% if city.country %}
+                                    <small class="text-muted">
+                                        {{ city.country.name }}
+                                    </small>
+                                {% endif %}
+                            </div>
+                            <div class="d-flex justify-content-between align-items-center">
+                                <small>
+                                    {{ city.figure_count|default(0) }} личностей
+                                </small>
+                               
+                            </div>
+                        </div>
+                        {% else %}
+                        <div class="text-center py-4 text-muted">
+                            <p class="mt-2">Нет данных</p>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Топ-5 стран по количеству известных личностей -->
+        <div class="col-lg-6 mb-4">
+            <div class="card shadow-sm h-100">
+                <div class="card-header bg-info text-white">
+                    <h5 class="card-title mb-0">
+                        <i class="bi bi-award"></i> Топ-5 стран по количеству известных личностей
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="list-group">
+                        {% for country in countries_stats[:5] %}
+                        <div class="list-group-item list-group-item-action">
+                            <div class="d-flex w-100 justify-content-between">
+                                <h6 class="mb-1">
+                                    {{ country.name }}
+                                </h6>
+                                <span class="badge bg-success rounded-pill">
+                                    {{ country.figure_count|default(0) }}
+                                </span>
+                            </div>
+                            <div class="mb-1">
+                                <small class="text-muted">
+                                    {{ country.continent|default("Не указан") }}
+                                </small>
+                            </div>
+                        </div>
+                        {% else %}
+                        <div class="text-center py-4 text-muted">
+                            <p class="mt-2">Нет данных</p>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Основной контент -->
+    <div class="row">
+        <!-- Левая колонка - Города -->
+        <div class="col-lg-6 mb-4">
+            {{ city_popularity_table(cities_stats) }}
+        </div>
+
+        <!-- Правая колонка - Страны -->
+        <div class="col-lg-6 mb-4">
+            {{ country_figures_table(countries_stats) }}
+        </div>
+    </div>
+
+    
+
+   
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    
+    const tables = document.querySelectorAll('table');
+    tables.forEach(table => {
+        const rows = table.querySelectorAll('tbody tr');
+        rows.forEach(row => {
+            row.addEventListener('mouseenter', function() {
+                this.style.backgroundColor = '#f8f9fa';
+            });
+            row.addEventListener('mouseleave', function() {
+                this.style.backgroundColor = '';
+            });
+        });
+    });
+
+    const cards = document.querySelectorAll('.stat-card, .card');
+    cards.forEach((card, index) => {
+        card.style.opacity = '0';
+        card.style.transform = 'translateY(20px)';
+        card.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
+        
+        setTimeout(() => {
+            card.style.opacity = '1';
+            card.style.transform = 'translateY(0)';
+        }, index * 100);
+    });
+
+    document.querySelectorAll('.copy-stat').forEach(button => {
+        button.addEventListener('click', function() {
+            const statText = this.getAttribute('data-stat');
+            navigator.clipboard.writeText(statText).then(() => {
+                const originalText = this.innerHTML;
+                this.innerHTML = '<i class="bi bi-check"></i> Скопировано';
+                setTimeout(() => {
+                    this.innerHTML = originalText;
+                }, 2000);
+            });
+        });
+    });
+});
+</script>
+{% endblock %}

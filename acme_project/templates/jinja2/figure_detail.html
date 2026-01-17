@@ -1,0 +1,169 @@
+<!-- templates/jinja2/figure_detail.html -->
+{% extends "jinja2/layouts/base.html" %}
+
+{% block title %}{{ figure.full_name }} - Pantheon Project{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-12">
+        <nav aria-label="breadcrumb" class="mb-4">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{{ url('home') }}">Главная</a></li>
+                <li class="breadcrumb-item"><a href="{{ url('figure_list') }}">Исторические личности</a></li>
+                <li class="breadcrumb-item active">{{ figure.full_name }}</li>
+            </ol>
+        </nav>
+        
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1>{{ figure.full_name }}</h1>
+            <div class="btn-group">
+                <a href="{{ url('figure_update', args=[figure.pk]) }}" class="btn btn-outline-primary">
+                    <i class="bi bi-pencil"></i> Редактировать
+                </a>
+                <a href="{{ url('figure_delete', args=[figure.pk]) }}" class="btn btn-outline-danger">
+                    <i class="bi bi-trash"></i> Удалить
+                </a>
+            </div>
+        </div>
+        
+        <div class="row">
+            <!-- Основная информация -->
+            <div class="col-md-4">
+                <div class="card h-100 shadow-sm">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="mb-0"><i class="bi bi-person-badge"></i> Основная информация</h5>
+                    </div>
+                    <div class="card-body">
+                        <table class="table table-borderless">
+                            <tr>
+                                <th class="w-50">ID статьи:</th>
+                                <td>{{ figure.article_id }}</td>
+                            </tr>
+                            {% if figure.birth_year %}
+                            <tr>
+                                <th>Год рождения:</th>
+                                <td>{{ figure.birth_year }}</td>
+                            </tr>
+                            {% endif %}
+                            <tr>
+                                <th>Место рождения:</th>
+                                <td>{{ figure.birth_location }}</td>
+                            </tr>
+                            {% if figure.occupation %}
+                            <tr>
+                                <th>Профессия:</th>
+                                <td>{{ figure.occupation.name }}</td>
+                            </tr>
+                            {% if figure.occupation.industry %}
+                            <tr>
+                                <th>Индустрия:</th>
+                                <td>{{ figure.occupation.industry }}</td>
+                            </tr>
+                            {% endif %}
+                            {% if figure.occupation.domain %}
+                            <tr>
+                                <th>Домен:</th>
+                                <td>{{ figure.occupation.domain }}</td>
+                            </tr>
+                            {% endif %}
+                            {% endif %}
+                        </table>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Популярность -->
+            <div class="col-md-4">
+                <div class="card h-100 shadow-sm">
+                    <div class="card-header bg-success text-white">
+                        <h5 class="mb-0"><i class="bi bi-graph-up-arrow"></i> Популярность</h5>
+                    </div>
+                    <div class="card-body">
+                        <table class="table table-borderless">
+                            <tr>
+                                <th class="w-50">Категория:</th>
+                                <td>
+                                    {% if figure.popularity_category == 'Очень высокая' %}
+                                        <span class="badge bg-success">Очень высокая</span>
+                                    {% elif figure.popularity_category == 'Высокая' %}
+                                        <span class="badge bg-primary">Высокая</span>
+                                    {% elif figure.popularity_category == 'Средняя' %}
+                                        <span class="badge bg-info">Средняя</span>
+                                    {% elif figure.popularity_category == 'Низкая' %}
+                                        <span class="badge bg-warning">Низкая</span>
+                                    {% else %}
+                                        <span class="badge bg-secondary">Очень низкая</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            <tr>
+                                <th>Индекс:</th>
+                                <td>{{ figure.historical_popularity_index|round(2) }}</td>
+                            </tr>
+                            <tr>
+                                <th>Просмотры:</th>
+                                <td>{{ figure.page_views|intcomma }}</td>
+                            </tr>
+                            <tr>
+                                <th>Средние просмотры:</th>
+                                <td>{{ figure.average_views|round(2) }}</td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Международность -->
+            <div class="col-md-4">
+                <div class="card h-100 shadow-sm">
+                    <div class="card-header bg-info text-white">
+                        <h5 class="mb-0"><i class="bi bi-translate"></i> Международность</h5>
+                    </div>
+                    <div class="card-body">
+                        <table class="table table-borderless">
+                            <tr>
+                                <th class="w-50">Языки статьи:</th>
+                                <td>
+                                    <span class="badge bg-primary rounded-pill">{{ figure.article_languages }}</span>
+                                </td>
+                            </tr>
+                        </table>
+                        
+                        {% if figure.original_city_name or figure.original_country_name or figure.original_occupation_name %}
+                        <div class="mt-4 pt-3 border-top">
+                            <h6 class="text-muted">Оригинальные данные:</h6>
+                            <table class="table table-sm table-borderless">
+                                {% if figure.original_city_name %}
+                                <tr>
+                                    <th>Город:</th>
+                                    <td>{{ figure.original_city_name }}</td>
+                                </tr>
+                                {% endif %}
+                                {% if figure.original_country_name %}
+                                <tr>
+                                    <th>Страна:</th>
+                                    <td>{{ figure.original_country_name }}</td>
+                                </tr>
+                                {% endif %}
+                                {% if figure.original_occupation_name %}
+                                <tr>
+                                    <th>Профессия:</th>
+                                    <td>{{ figure.original_occupation_name }}</td>
+                                </tr>
+                                {% endif %}
+                            </table>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="mt-4">
+            <a href="{{ url('figure_list') }}" class="btn btn-outline-secondary">
+                <i class="bi bi-arrow-left"></i> Назад к списку
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}

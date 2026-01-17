@@ -1,0 +1,225 @@
+{# templates/jinja2/macros/table_macros.html #}
+
+{# Макрос для создания таблицы с пагинацией #}
+{% macro render_table(data, columns, title=None, pagination=False, page_obj=None, request=None, sortable=True, id=None) %}
+<div class="card shadow-sm mb-4">
+    {% if title %}
+    <div class="card-header bg-primary text-white">
+        <h5 class="card-title mb-0">{{ title }}</h5>
+    </div>
+    {% endif %}
+    
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover table-striped mb-0 {% if sortable %}datatable{% endif %}" {% if id %}id="{{ id }}"{% endif %}>
+                <thead class="table-dark">
+                    <tr>
+                        {% for col in columns %}
+                        <th {% if col.width %}style="width: {{ col.width }};"{% endif %}>
+                            {{ col.title }}
+                            {% if sortable and col.sortable != False %}
+                            <i class="bi bi-arrow-down-up ms-1 text-muted"></i>
+                            {% endif %}
+                        </th>
+                        {% endfor %}
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for row in data %}
+                    <tr>
+                        {% for col in columns %}
+                        <td>
+                            {% if col.key %}
+                                {% set value = row|attr(col.key) %}
+                            {% elif col.getter %}
+                                {% set value = col.getter(row) %}
+                            {% else %}
+                                {% set value = row[col.field] if col.field in row else '' %}
+                            {% endif %}
+                            
+                            {% if col.render %}
+                                {{ col.render(value, row)|safe }}
+                            {% elif col.format == 'number' %}
+                                {{ value|intcomma }}
+                            {% elif col.format == 'decimal' %}
+                                {{ value|floatformat:2 }}
+                            {% elif col.format == 'percent' %}
+                                {{ (value * 100)|floatformat:1 }}%
+                            {% elif col.format == 'date' %}
+                                {{ value|date:"Y-m-d" }}
+                            {% elif col.format == 'datetime' %}
+                                {{ value|date:"Y-m-d H:i" }}
+                            {% elif col.format == 'boolean' %}
+                                {% if value %}
+                                    <span class="badge bg-success">Да</span>
+                                {% else %}
+                                    <span class="badge bg-secondary">Нет</span>
+                                {% endif %}
+                            {% elif col.format == 'badge' %}
+                                <span class="badge bg-{{ col.badge_color|default('primary') }}">{{ value }}</span>
+                            {% elif col.format == 'progress' %}
+                                <div class="progress" style="height: 6px;">
+                                    <div class="progress-bar bg-{{ col.progress_color|default('info') }}" 
+                                         style="width: {{ (value / col.max * 100)|default(100) }}%"
+                                         role="progressbar">
+                                    </div>
+                                </div>
+                                <small class="text-muted">{{ value|floatformat:1 }}/{{ col.max|default(10) }}</small>
+                            {% else %}
+                                {{ value|default('-') }}
+                            {% endif %}
+                        </td>
+                        {% endfor %}
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="{{ columns|length }}" class="text-center py-4 text-muted">
+                            <i class="bi bi-inbox fs-1"></i>
+                            <p class="mt-2">Нет данных для отображения</p>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+                {% if data and columns|length > 0 %}
+                <tfoot class="table-light">
+                    <tr>
+                        {% for col in columns %}
+                        <td>
+                            {% if col.summary %}
+                                <strong>{{ col.summary(data) }}</strong>
+                            {% endif %}
+                        </td>
+                        {% endfor %}
+                    </tr>
+                </tfoot>
+                {% endif %}
+            </table>
+        </div>
+    </div>
+    
+    {% if pagination and page_obj and request %}
+    <div class="card-footer">
+        {% include "jinja2/includes/pagination.html" %}
+    </div>
+    {% endif %}
+</div>
+{% endmacro %}
+
+{# Макрос для статистических карточек #}
+{% macro stats_card(title, value, icon=None, color='primary', change=None, subtitle=None) %}
+<div class="col-xl-3 col-lg-6 col-md-6 col-sm-12 mb-4">
+    <div class="card border-{{ color }} shadow-sm">
+        <div class="card-body">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h6 class="card-subtitle mb-2 text-muted">{{ title }}</h6>
+                    <h2 class="card-title mb-0">{{ value|intcomma }}</h2>
+                    {% if subtitle %}
+                    <p class="card-text small text-muted mb-0">{{ subtitle }}</p>
+                    {% endif %}
+                    {% if change is not none %}
+                    <small class="text-{{ 'success' if change > 0 else 'danger' if change < 0 else 'muted' }}">
+                        <i class="bi bi-arrow-{{ 'up' if change > 0 else 'down' if change < 0 else 'right' }}"></i>
+                        {{ change|abs }}%
+                    </small>
+                    {% endif %}
+                </div>
+                {% if icon %}
+                <div class="bg-{{ color }} bg-opacity-10 p-3 rounded-circle">
+                    <i class="bi bi-{{ icon }} fs-2 text-{{ color }}"></i>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endmacro %}
+
+{# Макрос для таблицы с графиком #}
+{% macro chart_table(data, chart_config, title=None) %}
+<div class="card shadow-sm mb-4">
+    {% if title %}
+    <div class="card-header bg-primary text-white">
+        <h5 class="card-title mb-0">{{ title }}</h5>
+    </div>
+    {% endif %}
+    
+    <div class="card-body">
+        <div class="row">
+            <div class="col-md-8">
+                <canvas id="{{ chart_config.id }}" height="300"></canvas>
+            </div>
+            <div class="col-md-4">
+                {{ render_table(data, chart_config.columns, pagination=False, sortable=False) }}
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const ctx = document.getElementById('{{ chart_config.id }}').getContext('2d');
+    new Chart(ctx, {{ chart_config.config|tojson|safe }});
+});
+</script>
+{% endmacro %}
+
+{# Макрос для мини-таблицы с ограниченным количеством строк #}
+{% macro mini_table(data, columns, title=None, max_rows=5, footer_text=None) %}
+<div class="card shadow-sm h-100">
+    {% if title %}
+    <div class="card-header bg-light">
+        <h6 class="card-title mb-0">{{ title }}</h6>
+    </div>
+    {% endif %}
+    
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-sm table-hover mb-0">
+                <thead class="table-light">
+                    <tr>
+                        {% for col in columns %}
+                        <th class="border-0">{{ col.title }}</th>
+                        {% endfor %}
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for row in data[:max_rows] %}
+                    <tr>
+                        {% for col in columns %}
+                        <td class="py-2">
+                            {% if col.key %}
+                                {% set value = row|attr(col.key) %}
+                            {% else %}
+                                {% set value = row[col.field] %}
+                            {% endif %}
+                            
+                            {% if col.render %}
+                                {{ col.render(value, row)|safe }}
+                            {% elif col.format == 'badge' %}
+                                <span class="badge bg-{{ col.badge_color|default('secondary') }}">{{ value }}</span>
+                            {% else %}
+                                {{ value|truncate(30) if col.truncate else value }}
+                            {% endif %}
+                        </td>
+                        {% endfor %}
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    
+    {% if footer_text or data|length > max_rows %}
+    <div class="card-footer bg-transparent py-2">
+        <small class="text-muted">
+            {% if footer_text %}
+                {{ footer_text }}
+            {% elif data|length > max_rows %}
+                Показано {{ max_rows }} из {{ data|length }} записей
+            {% endif %}
+        </small>
+    </div>
+    {% endif %}
+</div>
+{% endmacro %}

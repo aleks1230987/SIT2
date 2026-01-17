@@ -1,0 +1,84 @@
+{# templates/jinja2/macros/pagination.html #}
+{% macro pagination_controls(current_page, total_pages) %}
+{% if total_pages > 1 %}
+<nav aria-label="Навигация по страницам">
+    <ul class="pagination justify-content-center">
+        <!-- Первая страница -->
+        <li class="page-item {% if current_page == 1 %}disabled{% endif %}">
+            <a class="page-link" href="?page=1" aria-label="Первая">
+                <i class="bi bi-chevron-double-left"></i>
+            </a>
+        </li>
+        
+        <!-- Предыдущая страница -->
+        <li class="page-item {% if current_page == 1 %}disabled{% endif %}">
+            <a class="page-link" href="?page={{ current_page - 1 }}" aria-label="Предыдущая">
+                <i class="bi bi-chevron-left"></i>
+            </a>
+        </li>
+        
+        <!-- Ближайшие страницы -->
+        {% for page_num in range(max(1, current_page - 2), min(total_pages, current_page + 2) + 1) %}
+            <li class="page-item {% if page_num == current_page %}active{% endif %}">
+                <a class="page-link" href="?page={{ page_num }}">{{ page_num }}</a>
+            </li>
+        {% endfor %}
+        
+        <!-- Следующая страница -->
+        <li class="page-item {% if current_page == total_pages %}disabled{% endif %}">
+            <a class="page-link" href="?page={{ current_page + 1 }}" aria-label="Следующая">
+                <i class="bi bi-chevron-right"></i>
+            </a>
+        </li>
+        
+        <!-- Последняя страница -->
+        <li class="page-item {% if current_page == total_pages %}disabled{% endif %}">
+            <a class="page-link" href="?page={{ total_pages }}" aria-label="Последняя">
+                <i class="bi bi-chevron-double-right"></i>
+            </a>
+        </li>
+    </ul>
+</nav>
+{% endif %}
+{% endmacro %}
+
+{% macro page_info(current_page, total_pages, total_figures, page_size) %}
+<div class="alert alert-info mb-3">
+    <div class="row">
+        <div class="col-md-6">
+            <i class="bi bi-info-circle"></i>
+            Страница <strong>{{ current_page }}</strong> из <strong>{{ total_pages }}</strong>
+        </div>
+        <div class="col-md-6 text-end">
+            Записи <strong>{{ ((current_page - 1) * page_size) + 1 }}-{{ min(current_page * page_size, total_figures) }}</strong>
+            из <strong>{{ total_figures }}</strong>
+        </div>
+    </div>
+</div>
+{% endmacro %}
+
+{% macro simple_pagination(current_page, total_pages) %}
+<div class="mt-3">
+    <div class="d-flex justify-content-between">
+        {% if current_page > 1 %}
+        <a href="?page={{ current_page - 1 }}" class="btn btn-outline-primary">
+            <i class="bi bi-arrow-left"></i> Предыдущая
+        </a>
+        {% else %}
+        <span></span>
+        {% endif %}
+        
+        <span class="align-self-center">
+            Страница {{ current_page }} из {{ total_pages }}
+        </span>
+        
+        {% if current_page < total_pages %}
+        <a href="?page={{ current_page + 1 }}" class="btn btn-outline-primary">
+            Следующая <i class="bi bi-arrow-right"></i>
+        </a>
+        {% else %}
+        <span></span>
+        {% endif %}
+    </div>
+</div>
+{% endmacro %}
